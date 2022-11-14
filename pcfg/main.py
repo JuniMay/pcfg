@@ -1,8 +1,11 @@
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
 class BaseStructure:
-    def __init__(self) -> None:
+    def __init__(self, s: Optional[str]=None) -> None:
         self.segments: List[Tuple[str, int]] = []
+
+        if s is not None:
+            self.derive(s)
 
     def __str__(self) -> str:
         s = ""
@@ -17,7 +20,13 @@ class BaseStructure:
     def __eq__(self, __o: object) -> bool:
         return hash(self) == hash(__o)
 
-    def from_str(self, s: str) -> None:
+    def is_empty(self) -> bool:
+        return len(self.segments) == 0
+
+    def derive(self, s: str) -> None:
+        if s == '':
+            return
+
         self.segments = []
         state = 'Any'
 
@@ -84,15 +93,31 @@ class BaseStructure:
                 raise RuntimeError(f'Unknown state `{other}`.')
 
 
-
 if __name__ == '__main__':
-    a = BaseStructure()
-    a.from_str('AAAbbFF22232##&%^rtft$%ASs!')
-    b = BaseStructure()
-    b.from_str('ABCbaFX22232##&%^rtft$%ASs!')
-    c = BaseStructure()
-    c.from_str('123451#A')
-    print(a, b, c)
-    print(a == b)
-    print(a == c)
-    print(b == c)
+    base_structure_count = dict()
+    sum = 0
+
+    f = open('data/john.txt', 'r', encoding='utf-8')
+    
+    for s in f.readlines():
+        base_structure = BaseStructure(s.strip())
+        if base_structure.is_empty():
+            continue
+
+        if base_structure not in base_structure_count:
+            base_structure_count[base_structure] = 0  
+        base_structure_count[base_structure] += 1
+
+        sum += 1
+
+
+    print(len(base_structure_count))
+
+    sorted_base_structures = dict(
+        sorted(
+            base_structure_count.items(), 
+            key=lambda item: item[1], 
+            reverse=True))
+
+    for base_structure, count in sorted_base_structures.items():
+        print(f'{str(base_structure):<20} {count / sum * 100 :<.3}%')

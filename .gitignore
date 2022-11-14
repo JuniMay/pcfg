@@ -206,3 +206,5 @@ cython_debug/
 *.opt-record.json.gz
 
 *.db
+
+/data
