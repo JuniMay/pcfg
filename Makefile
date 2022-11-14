@@ -18,7 +18,6 @@ $(VENV):
 .PHONY: test clean init dist docs
 
 init: $(VENV)
-	mkdir -p tests/build
 
 test: $(VENV) init
 	$(BIN)/python3 -m unittest discover
