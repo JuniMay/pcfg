@@ -2,6 +2,7 @@ from typing import List, Tuple, Optional, Self
 import re
 import os
 
+
 class BaseStructure:
     def __init__(self) -> None:
         self.segments: List[Tuple[str, int]] = []
@@ -77,7 +78,7 @@ class BaseStructure:
                         state = 'Any'
                 case other:
                     raise RuntimeError(f'Unknown state `{other}`.')
-        
+
         match state:
             case 'Lower':
                 self.segments.append(('L', count))
@@ -102,15 +103,15 @@ class BaseStructure:
 
         return self
 
+
 class BaseStructureCollector:
-    def __init__(self, train_data_path: str) -> None:
-        self.train_data_path = train_data_path
+    def __init__(self) -> None:
         self.base_structure_prob = {}
 
-    def derive(self) -> None:
+    def derive(self, train_data_path: str) -> None:
         base_structure_count = dict()
         base_structure_total = 0
-        with open(self.train_data_path, 'r', encoding='utf-8') as f:
+        with open(train_data_path, 'r', encoding='utf-8') as f:
             for s in f.readlines():
                 base_structure = BaseStructure().derive(s.strip())
                 if base_structure.is_empty():
@@ -119,15 +120,20 @@ class BaseStructureCollector:
                     base_structure_count[base_structure] = 0
                 base_structure_count[base_structure] += 1
                 base_structure_total += 1
-        
-        
+
         for structure, count in dict(
             sorted(
-                base_structure_count.items(), 
-                key=lambda item: item[1], 
+                base_structure_count.items(),
+                key=lambda item: item[1],
                 reverse=True)).items():
             self.base_structure_prob[structure] = count / base_structure_total
 
+    def from_file(self, filename) -> None:
+        with open(filename, 'r', encoding='utf-8') as f:
+            for s in f.readlines():
+                structure_str, prob_str = s.strip().split(',')
+                self.base_structure_prob[BaseStructure().from_str(
+                    structure_str)] = float(prob_str.strip())
 
     def dump(self, filename) -> None:
         os.makedirs(os.path.dirname(filename), exist_ok=True)

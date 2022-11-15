@@ -1,10 +1,11 @@
 from typing import Tuple
 from copy import deepcopy
+from pathlib import Path
 import os
 
+
 class TerminalCollector:
-    def __init__(self, train_data_path) -> None:
-        self.train_data_path = train_data_path
+    def __init__(self) -> None:
         self.segment_terminal_count = {}
         self.segment_terminal_prob = {}
         self.segment_count = {}
@@ -12,7 +13,7 @@ class TerminalCollector:
     def add(self, segment: Tuple[str, int], terminal: str) -> None:
         if segment not in self.segment_terminal_count:
             self.segment_terminal_count[segment] = {}
-        
+
         if segment not in self.segment_count:
             self.segment_count[segment] = 0
 
@@ -21,8 +22,7 @@ class TerminalCollector:
 
         self.segment_terminal_count[segment][terminal] += 1
         self.segment_count[segment] += 1
-        
-    
+
     def derive_single(self, s) -> None:
         if s == '':
             return
@@ -88,7 +88,7 @@ class TerminalCollector:
                         state = 'Any'
                 case other:
                     raise RuntimeError(f'Unknown state `{other}`.')
-        
+
         match state:
             case 'Lower':
                 self.add(('L', count), s[start_index:index])
@@ -101,23 +101,37 @@ class TerminalCollector:
             case other:
                 raise RuntimeError(f'Unknown state `{other}`.')
 
-
-    def derive(self) -> None:
-        with open(self.train_data_path, 'r', encoding='utf-8') as f:
+    def derive(self, train_data_path) -> None:
+        with open(train_data_path, 'r', encoding='utf-8') as f:
             for s in f.readlines():
-                self.derive_single(s)
-        
+                self.derive_single(s.strip())
+
         self.segment_terminal_prob = deepcopy(self.segment_terminal_count)
         for segment, tc in self.segment_terminal_count.items():
             for terminal, count in tc.items():
                 self.segment_terminal_prob[segment][terminal] = (
                     count / self.segment_count[segment])
-                
+
+    def from_dir(self, dir) -> None:
+        p = Path(dir).glob('*.*')
+        for filename in filter(Path.is_file, p):
+            filename = str(filename).replace('\\', '/')
+            segment_id = str(filename).rsplit('/', 1)[1].split('.')[0]
+
+            with open(filename, 'r', encoding='utf-8') as f:
+                segment = (segment_id[0], int(segment_id[1:]))
+                self.segment_terminal_prob[segment] = {}
+
+                for s in f.readlines():
+                    terminal, prob_str = s.split('\t')
+                    self.segment_terminal_prob[segment][terminal] = float(
+                        prob_str.strip())
+
     def dump(self, dir) -> None:
         os.makedirs(dir, exist_ok=True)
         for segment, tp in self.segment_terminal_prob.items():
-            tp = dict(sorted(tp.items(), key=lambda item: item[1], reverse=True))
+            tp = dict(
+                sorted(tp.items(), key=lambda item: item[1], reverse=True))
             with open(f'{dir}/{segment[0]}{segment[1]}.csv', 'w', encoding='utf-8') as f:
                 for terminal, prob in tp.items():
-                    f.write(f'{terminal}, {prob}\n')
-
+                    f.write(f'{terminal}\t{prob}\n')
