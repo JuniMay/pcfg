@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, Dict, Optional
 from copy import deepcopy
 from pathlib import Path
 import os
@@ -7,8 +7,11 @@ import os
 class TerminalCollector:
     def __init__(self) -> None:
         self.segment_terminal_count = {}
-        self.segment_terminal_prob = {}
+        self.segment_terminal_prob: Dict[Tuple[str, int], Dict[str, float]] = {}
         self.segment_count = {}
+        
+    def __getitem__(self, segment: Tuple[str, int], terminal: str):
+        return self.segment_terminal_prob[segment][terminal]
 
     def add(self, segment: Tuple[str, int], terminal: str) -> None:
         if segment not in self.segment_terminal_count:
@@ -22,6 +25,29 @@ class TerminalCollector:
 
         self.segment_terminal_count[segment][terminal] += 1
         self.segment_count[segment] += 1
+
+    def best_of(self, segment: Tuple[str, int]) -> Tuple[str, float]:
+        return next(iter(self.segment_terminal_prob[segment].items()))
+
+    def next_of(self, terminal_str: str) -> Optional[Tuple[str, float]]:
+        segment = (None, len(terminal_str))
+        if terminal_str.islower():
+            segment = ('L', len(terminal_str))
+        elif terminal_str.isupper():
+            segment = ('U', len(terminal_str))
+        elif terminal_str.isnumeric():
+            segment = ('D', len(terminal_str))
+        else:
+            segment = ('S', len(terminal_str))
+        
+        keys = self.segment_terminal_prob[segment].keys()
+        idx = list(keys).index(terminal_str)
+
+        if idx == len(list(keys)) - 1:
+            return None
+
+        next_terminal = list(keys)[idx + 1]
+        return next_terminal, self.segment_terminal_prob[segment][next_terminal]
 
     def derive_single(self, s) -> None:
         if s == '':

@@ -1,4 +1,4 @@
-from typing import List, Tuple, Optional, Self
+from typing import List, Tuple, Optional, Self, Dict
 import re
 import os
 
@@ -106,7 +106,7 @@ class BaseStructure:
 
 class BaseStructureCollector:
     def __init__(self) -> None:
-        self.base_structure_prob = {}
+        self.base_structure_prob: Dict[BaseStructure, float] = {}
 
     def derive(self, train_data_path: str) -> None:
         base_structure_count = dict()

@@ -1,5 +1,5 @@
 from pcfg import BaseStructureCollector
-from pcfg import TerminalCollector
+from pcfg import TerminalCollector, Guesser
 
 if __name__ == '__main__':
     bcollector = BaseStructureCollector()
@@ -10,10 +10,9 @@ if __name__ == '__main__':
     tcollector.derive('data/myspace.txt')
     tcollector.dump('model/terminal')
 
-    bcollector = BaseStructureCollector()
-    bcollector.from_file('model/base.csv')
-    # print(bcollector.base_structure_prob)
+    guesser = Guesser('model/base.csv', 'model/terminal')
+    guesser.initialize()
 
-    tcollector = TerminalCollector()
-    tcollector.from_dir('model/terminal')
-    # print(tcollector.segment_terminal_prob)
+    while True:
+        input("")
+        print(guesser.next())
