@@ -10,7 +10,7 @@ if __name__ == '__main__':
     tcollector.derive('data/myspace.txt')
     tcollector.dump('model/terminal')
 
-    guesser = Guesser('model/base.csv', 'model/terminal')
+    guesser = Guesser('model/base.csv', 'model/terminal', use_preterminal=True)
     guesser.initialize()
 
     while True:

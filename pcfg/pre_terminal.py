@@ -14,7 +14,7 @@ class PreTerminalStructure:
     def __str__(self) -> str:
         res = ""
         for segment in self.segments:
-            res = res + segment.terminal_str  # TODO: non-terminal in segment
+            res = res + str(segment)
 
         return res
 

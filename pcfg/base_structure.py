@@ -5,11 +5,11 @@ import os
 
 class BaseStructure:
     def __init__(self) -> None:
-        self.segments: List[Tuple[str, int]] = []
+        self.non_terminals: List[Tuple[str, int]] = []
 
     def __str__(self) -> str:
         s = ""
-        for typ, count in self.segments:
+        for typ, count in self.non_terminals:
             s = s + typ + str(count)
         return s
 
@@ -20,13 +20,13 @@ class BaseStructure:
         return hash(self) == hash(__o)
 
     def is_empty(self) -> bool:
-        return len(self.segments) == 0
+        return len(self.non_terminals) == 0
 
     def derive(self, s: str) -> Self:
         if s == '':
             return self
 
-        self.segments = []
+        self.non_terminals = []
         state = 'Any'
 
         count = 0
@@ -53,41 +53,41 @@ class BaseStructure:
                         count = count + 1
                         index = index + 1
                     else:
-                        self.segments.append(('L', count))
+                        self.non_terminals.append(('L', count))
                         state = 'Any'
                 case 'Upper':
                     if c.isupper():
                         count = count + 1
                         index = index + 1
                     else:
-                        self.segments.append(('U', count))
+                        self.non_terminals.append(('U', count))
                         state = 'Any'
                 case 'Digit':
                     if c.isdigit():
                         count = count + 1
                         index = index + 1
                     else:
-                        self.segments.append(('D', count))
+                        self.non_terminals.append(('D', count))
                         state = 'Any'
                 case 'Special':
                     if not c.isupper() and not c.islower() and not c.isdigit():
                         count = count + 1
                         index = index + 1
                     else:
-                        self.segments.append(('S', count))
+                        self.non_terminals.append(('S', count))
                         state = 'Any'
                 case other:
                     raise RuntimeError(f'Unknown state `{other}`.')
 
         match state:
             case 'Lower':
-                self.segments.append(('L', count))
+                self.non_terminals.append(('L', count))
             case 'Upper':
-                self.segments.append(('U', count))
+                self.non_terminals.append(('U', count))
             case 'Digit':
-                self.segments.append(('D', count))
+                self.non_terminals.append(('D', count))
             case 'Special':
-                self.segments.append(('S', count))
+                self.non_terminals.append(('S', count))
             case other:
                 raise RuntimeError(f'Unknown state `{other}`.')
 
@@ -99,7 +99,7 @@ class BaseStructure:
             return self
 
         for typ, count_str in m:
-            self.segments.append((typ, int(count_str)))
+            self.non_terminals.append((typ, int(count_str)))
 
         return self
 

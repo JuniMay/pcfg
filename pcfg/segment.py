@@ -11,6 +11,9 @@ class Segment:
         self.non_terminal: Tuple[str, int] = non_terminal
         self.terminal_str: str = terminal_str
         self.prob = prob
+        if self.non_terminal is not None:
+            self.prob = 1.0
+
         if self.non_terminal is None and self.terminal_str is None:
             raise ValueError(
                 "Segment must be either terminal or non-terminal.")
@@ -24,6 +27,12 @@ class Segment:
             raise ValueError(
                 "Segment must be either terminal or non-terminal (this shall not happen, check the code)."
             )
+    
+    def __str__(self) -> str:
+        if self.terminal_str is not None:
+            return self.terminal_str
+        elif self.non_terminal is not None:
+            return self.non_terminal[0] + str(self.non_terminal[1]) + "<sep>"
 
     def is_terminal(self) -> bool:
         return (self.terminal_str is not None)
